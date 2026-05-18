@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react'
 import WordCard from './WordCard.jsx'
 import { fetchWordData } from '../api.js'
-import { downloadAnkiPackage } from '../utils/ankiExport.js'
 
 const POS_OPTIONS = [
   '全部', 'noun', 'verb', 'adjective', 'adverb',
@@ -15,7 +14,6 @@ export default function ListPage({ words, onAdd, onDelete, onStar, offline }) {
   const [search, setSearch] = useState('')
   const [posFilter, setPosFilter] = useState('全部')
   const [starOnly, setStarOnly] = useState(false)
-  const [ankiProgress, setAnkiProgress] = useState(null) // null | { current, total, word }
 
   async function handleLookup() {
     const word = input.trim()
@@ -35,18 +33,6 @@ export default function ListPage({ words, onAdd, onDelete, onStar, offline }) {
 
   function handleKeyDown(e) {
     if (e.key === 'Enter') handleLookup()
-  }
-
-  async function handleAnkiExport() {
-    if (!filtered.length || ankiProgress) return
-    setAnkiProgress({ current: 0, total: filtered.length, word: '' })
-    try {
-      await downloadAnkiPackage(filtered, p => setAnkiProgress(p))
-    } catch (e) {
-      setError('Anki 匯出失敗：' + e.message)
-    } finally {
-      setAnkiProgress(null)
-    }
   }
 
   const filtered = useMemo(() => {
@@ -110,30 +96,7 @@ export default function ListPage({ words, onAdd, onDelete, onStar, offline }) {
         >
           {POS_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
-        <button
-          className="anki-btn"
-          onClick={handleAnkiExport}
-          disabled={filtered.length === 0 || !!ankiProgress}
-          title={`匯出 ${filtered.length} 個單字（含音檔）`}
-        >
-          {ankiProgress
-            ? `下載音檔 ${ankiProgress.current}/${ankiProgress.total}`
-            : '⬇ Anki'}
-        </button>
       </div>
-
-      {/* Anki progress bar */}
-      {ankiProgress && (
-        <div className="anki-progress">
-          <div
-            className="anki-progress-fill"
-            style={{ width: `${(ankiProgress.current / ankiProgress.total) * 100}%` }}
-          />
-          <span className="anki-progress-label">
-            正在取得「{ankiProgress.word}」音檔…
-          </span>
-        </div>
-      )}
 
       {/* Cards */}
       {filtered.length === 0 ? (
