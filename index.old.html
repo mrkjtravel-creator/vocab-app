@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TOEIC練功坊">
+  <meta name="theme-color" content="#080810">
+  <title>TOEIC 練功坊</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    html, body { margin: 0; padding: 0; background: #efefef; height: 100%; }
+    #root { min-height: 100vh; }
+    * { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    /* ── Question Bank ────────────────────────────────────────────────────── */
+    const QB = {
+      grammar: [
+        { id:"g01", diff:"easy", q:"The manager _____ the report by the time the meeting starts.", opts:["will have finished","has finished","is finishing","finished"], ans:0, exp:"未來完成式 (will have finished) 表示在未來某時間點前已完成的動作。'By the time the meeting starts' 指向未來時間點，故用未來完成式。" },
+        { id:"g02", diff:"easy", q:"Neither the employees nor the manager _____ aware of the new policy.", opts:["are","is","were","have been"], ans:1, exp:"Neither...nor 連接兩主詞時，動詞與最近的主詞一致。'the manager' 為單數，故用 'is'。" },
+        { id:"g03", diff:"hard", q:"_____ the project deadline, the team worked overtime every day.", opts:["Due to meet","In order to meet","So as to meet","Having met"], ans:1, exp:"表達目的用 'in order to + 原形動詞'。'due to' 接名詞，'so as to' 較正式但語意較弱，'having met' 表已完成動作，均不符。" },
+        { id:"g04", diff:"medium", q:"The new software _____ to all departments next Monday.", opts:["will distribute","is being distributed","will be distributed","distributes"], ans:2, exp:"'software' 是被分發的對象，需被動語態。未來被動式為 'will be + p.p.'。" },
+        { id:"g05", diff:"easy", q:"Please submit your application _____ the deadline.", opts:["until","during","before","since"], ans:2, exp:"'Before the deadline' = 在截止日期前，符合語境。'Until' 持續到某時間，'during' 期間，'since' 自從，均不符。" },
+        { id:"g06", diff:"medium", q:"The company has _____ its revenue by 20% this quarter.", opts:["raised","risen","arisen","arose"], ans:0, exp:"'Raise' (raised/raised) 是及物動詞，意為「提高」。'Rise' 不及物，不接受詞。此句 revenue 是受詞，故用 raised。" },
+        { id:"g07", diff:"hard", q:"_____ he arrived late, he still managed to make the presentation.", opts:["Although","Despite","However","Nevertheless"], ans:0, exp:"'Although' 是連接詞，後接完整子句（主詞+動詞）。'Despite' 是介系詞接名詞，'however/nevertheless' 是副詞，不能連接子句。" },
+        { id:"g08", diff:"medium", q:"I suggest that he _____ the contract before signing.", opts:["reviews","review","reviewed","to review"], ans:1, exp:"suggest/recommend/insist 後 that 子句使用假設語氣（subjunctive），動詞用原形，不加 s/es。" },
+        { id:"g09", diff:"medium", q:"By next year, she _____ at this company for a decade.", opts:["will work","has worked","will have worked","worked"], ans:2, exp:"'By next year' + 動作持續到未來某時間點 → 未來完成式 will have worked。" },
+        { id:"g10", diff:"easy", q:"The documents _____ on your desk when you arrive tomorrow.", opts:["will be","are","were","have been"], ans:0, exp:"談論未來的狀態，主詞 'documents' 複數，用 will be。" },
+        { id:"g11", diff:"hard", q:"_____ is important that employees attend the mandatory training.", opts:["This","That","It","There"], ans:2, exp:"'It is important that...' 是固定句型，用虛主詞 it 代替後面的 that 子句。" },
+        { id:"g12", diff:"medium", q:"The CEO, along with her assistants, _____ attending the conference.", opts:["are","were","is","have been"], ans:2, exp:"'along with' 不影響主詞，主詞仍是 'The CEO'（單數），故動詞用 is。" },
+        { id:"g13", diff:"hard", q:"Had I known about the meeting earlier, I _____ prepared better.", opts:["would have","will have","had","would"], ans:0, exp:"這是與過去事實相反的假設語氣（第三條件句）。If 子句省略 if 倒裝：Had I known... 主要子句用 would have + p.p.。" },
+        { id:"g14", diff:"medium", q:"The report must _____ before the end of the fiscal year.", opts:["submit","be submitted","submitted","submitting"], ans:1, exp:"'must' 後接原形動詞，且 report 是被提交的，需被動語態：must be submitted。" },
+        { id:"g15", diff:"easy", q:"We need someone _____ experience in project management.", opts:["who has","who have","whose","which has"], ans:0, exp:"'someone' 是人，關係代名詞用 who，且 someone 是單數，故 who has。" },
+      ],
+      vocabulary: [
+        { id:"v01", diff:"easy", q:"The new policy will _____ all employees in the company.", opts:["affect","effect","infect","detect"], ans:0, exp:"'Affect'（動詞）= 影響。'Effect' 通常是名詞。'Infect' = 感染，'detect' = 偵測，均不符。" },
+        { id:"v02", diff:"medium", q:"The board of directors will _____ on the merger proposal next week.", opts:["deliberate","celebrate","tolerate","moderate"], ans:0, exp:"'Deliberate'（動詞）= 審議、仔細考慮，常見於正式會議場合。" },
+        { id:"v03", diff:"hard", q:"The CEO's _____ leadership style inspired the entire organization.", opts:["exemplary","preliminary","documentary","elementary"], ans:0, exp:"'Exemplary' = 典範的、模範的。'Preliminary' = 初步，'documentary' = 紀錄片的，'elementary' = 基礎的。" },
+        { id:"v04", diff:"medium", q:"We need to _____ our resources to complete the project on time.", opts:["allocate","locate","dislocate","relocate"], ans:0, exp:"'Allocate' = 分配、撥出資源，是商業英語常見詞彙。" },
+        { id:"v05", diff:"easy", q:"Please _____ the attached documents for your reference.", opts:["enclose","disclose","foreclose","reclose"], ans:0, exp:"'Enclose' = 附上、附寄，常見於商業書信中。" },
+        { id:"v06", diff:"hard", q:"The company decided to _____ its operations to cut costs.", opts:["streamline","undermine","decline","combine"], ans:0, exp:"'Streamline' = 精簡、使更有效率，指簡化流程以提升效能。" },
+        { id:"v07", diff:"medium", q:"The quarterly report showed a significant _____ in sales.", opts:["fluctuation","flutation","fluctation","fluctaion"], ans:0, exp:"'Fluctuation' = 波動、起伏，是商業報告常見詞彙。注意正確拼寫。" },
+        { id:"v08", diff:"easy", q:"The new employee showed great _____ in learning the company's systems.", opts:["initiative","imitative","tentative","sensitive"], ans:0, exp:"'Initiative' = 主動性、進取心，'take initiative' 是常見搭配。" },
+        { id:"v09", diff:"hard", q:"The marketing team developed an _____ campaign to attract younger customers.", opts:["innovative","invocative","indicative","inductive"], ans:0, exp:"'Innovative' = 創新的，是形容行銷策略的常用詞。" },
+        { id:"v10", diff:"medium", q:"Please _____ your travel expenses within 30 days of your return.", opts:["reimburse","disburse","immerse","disperse"], ans:0, exp:"'Reimburse' = 報銷、償還費用，是商務旅行常見詞彙。" },
+        { id:"v11", diff:"easy", q:"The contract will _____ at the end of this month.", opts:["expire","aspire","inspire","perspire"], ans:0, exp:"'Expire' = 到期、期滿。合約、訂閱的「到期」均用此詞。" },
+        { id:"v12", diff:"medium", q:"The manager asked her team to _____ the project proposal by Friday.", opts:["finalize","formalize","familiarize","fertilize"], ans:0, exp:"'Finalize' = 定案、最終確定，是商務英語高頻詞。" },
+        { id:"v13", diff:"hard", q:"The merger created significant _____ between the two companies' product lines.", opts:["synergy","surgery","energy","allergy"], ans:0, exp:"'Synergy' = 協同效應，指兩者合作產生的效益大於各自單獨的總和。" },
+        { id:"v14", diff:"medium", q:"We must _____ to the new safety regulations immediately.", opts:["adhere","cohere","inhere","revere"], ans:0, exp:"'Adhere to' = 遵守、遵循（規定）。常與 'to' 搭配。" },
+        { id:"v15", diff:"easy", q:"The company offers a _____ benefits package including health insurance.", opts:["comprehensive","apprehensive","reprehensive","extensive"], ans:0, exp:"'Comprehensive' = 全面的、綜合的，常形容福利方案或計畫。" },
+      ],
+      reading: [
+        { id:"r01", diff:"medium", q:`閱讀以下公告並回答：\n\n"Greentech Solutions announced today that it will expand its renewable energy division by hiring 500 new engineers over the next two years. The company, which currently operates in 15 countries, plans to focus on solar and wind energy projects in Southeast Asia."\n\nWhat is the main purpose of this announcement?`, opts:["To report financial results","To announce a business expansion plan","To introduce new technology","To describe current operations"], ans:1, exp:"文章核心是宣布擴張計畫（500名工程師、擴大再生能源部門），故選B。財務結果、新技術、現有業務描述均只是補充資訊。" },
+        { id:"r02", diff:"easy", q:`閱讀以下電子郵件並回答：\n\n"Dear Mr. Chen,\nI am writing to confirm your reservation at the Grand Pacific Hotel from March 15 to March 18. Your room (Deluxe Suite, Room 412) will be ready for check-in at 3:00 PM. Please note that checkout time is 11:00 AM."\n\nWhen should Mr. Chen check out?`, opts:["3:00 PM on March 18","11:00 AM on March 18","3:00 PM on March 15","11:00 AM on March 15"], ans:1, exp:"文章明確說 checkout time is 11:00 AM，入住日期為 March 15-18，故退房為 March 18 的 11:00 AM。注意區分 check-in (3PM) 和 checkout (11AM)。" },
+        { id:"r03", diff:"hard", q:`閱讀以下公告並回答：\n\n"Attention all staff: Effective immediately, the parking lot on the east side of Building B will be closed for renovation until further notice. Employees are encouraged to use the north parking garage. Monthly passes for the north garage can be obtained from the HR department at a subsidized rate of $30 per month."\n\nWhat can employees get from the HR department?`, opts:["Keys to east parking lot","Renovation schedule","Discounted parking passes","Free parking for one month"], ans:2, exp:"HR 提供 'subsidized rate of $30 per month' 的月票。'Subsidized' = 補貼折扣，故選C。並非免費（D錯），也非鑰匙或時程表。" },
+        { id:"r04", diff:"medium", q:`閱讀以下報告片段並回答：\n\n"The quarterly sales report shows a 15% increase in online sales compared to the same period last year. However, in-store sales declined by 8%. Overall revenue remained relatively stable due to the growth in the e-commerce sector."\n\nWhat happened to in-store sales?`, opts:["They increased by 15%","They remained stable","They decreased by 8%","They were not reported"], ans:2, exp:"文章明確指出 'in-store sales declined by 8%'，declined = decreased（下降）。" },
+        { id:"r05", diff:"medium", q:`閱讀以下備忘錄並回答：\n\n"To: All Staff\nFrom: HR Department\nSubject: Annual Performance Reviews\n\nAnnual performance reviews will be conducted from September 1 to September 30. All managers must schedule meetings with their direct reports by August 15. Employees are required to complete self-assessment forms available on the company intranet."\n\nBy when must managers schedule meetings?`, opts:["August 15","September 1","September 30","Not specified"], ans:0, exp:"文章說 'managers must schedule meetings... by August 15'，清楚指出截止日期為 August 15。" },
+        { id:"r06", diff:"hard", q:`閱讀以下廣告並回答：\n\n"OFFICE SPACE FOR LEASE\nPrime location in downtown financial district. 2,500 sq ft. Available from January 1. Features: 24/7 security, high-speed internet, parking for 10 vehicles. Lease terms: Minimum 2-year contract. Monthly rent: $4,500. Contact: properties@buildingco.com"\n\nWhat is NOT mentioned as a feature of the office space?`, opts:["24/7 security","High-speed internet","Cafeteria","Parking"], ans:2, exp:"廣告提到的設施：24/7 security、high-speed internet、parking for 10 vehicles。Cafeteria（餐廳）完全未提及，故選C。" },
+        { id:"r07", diff:"easy", q:`閱讀以下通知並回答：\n\n"The company picnic originally scheduled for June 14 has been postponed due to weather concerns. The new date is June 21 at Riverside Park. Transportation will be provided from the main office. RSVP to events@company.com by June 18."\n\nWhy was the picnic postponed?`, opts:["Venue unavailability","Weather concerns","Low registration","Budget issues"], ans:1, exp:"通知明確說明 'postponed due to weather concerns'（因天氣考量延期）。" },
+        { id:"r08", diff:"medium", q:`閱讀以下商業信函並回答：\n\n"Dear Ms. Park,\nThank you for your interest in our Premium Membership. As a Premium Member, you will receive: unlimited access to all online courses, monthly industry reports, and a 20% discount at our partner stores. Membership fee is $199 per year. Please visit our website to complete your registration."\n\nHow much is the annual membership fee?`, opts:["$19.99 per month","$199 per year","$20 per month","$1,990 per year"], ans:1, exp:"信中明確說明 'Membership fee is $199 per year'（每年199美元）。注意不要和折扣數字 20% 混淆。" },
+        { id:"r09", diff:"hard", q:`閱讀以下新聞摘要並回答：\n\n"TechVision Corp reported record profits for the third quarter, driven primarily by strong performance in its cloud computing division. The company's stock rose 12% following the announcement. CEO James Wright attributed the success to cost-cutting measures implemented earlier this year and increased enterprise client acquisitions."\n\nWhat did CEO James Wright credit for the company's success?`, opts:["New product launches","Record stock prices","Cost cuts and new clients","Cloud computing expansion"], ans:2, exp:"CEO 說成功歸因於 'cost-cutting measures'（降低成本）和 'increased enterprise client acquisitions'（新增企業客戶），故選C。" },
+        { id:"r10", diff:"medium", q:`閱讀以下招募公告並回答：\n\n"POSITION: Marketing Coordinator\nRequirements: Bachelor's degree in Marketing or related field, minimum 2 years of experience, proficiency in Adobe Creative Suite. Salary: Competitive, based on experience. Benefits: Health insurance, 15 days annual leave, flexible working hours. Send resume to hr@marketingfirm.com"\n\nWhich benefit is NOT offered?`, opts:["Health insurance","15 days annual leave","Flexible hours","Stock options"], ans:3, exp:"公告提到的福利：health insurance、15 days annual leave、flexible working hours。Stock options（股票選擇權）完全未提及。" },
+      ],
+      listening: [
+        { id:"l01", diff:"easy", q:`[模擬聽力] 對話：\n\nMan: "Excuse me, could you tell me where the HR office is?"\nWoman: "Sure! Take the elevator to the third floor, turn left, and it's the second door on your right."\n\nWhere is the HR office?`, opts:["2F, first door on the left","3F, second door on the right","3F, first door on the left","2F, second door on the right"], ans:1, exp:"女士說：Take the elevator to the third floor（三樓），turn left，it's the second door on your right（右側第二扇門）。故選B。" },
+        { id:"l02", diff:"medium", q:`[模擬聽力] 電話留言：\n\n"Hi, this is Sarah from ABC Company. I'm calling to reschedule our meeting originally planned for Tuesday at 2 PM. Could we move it to Wednesday at 10 AM instead? Please call me back at 555-0123 to confirm."\n\nWhy is Sarah calling?`, opts:["To cancel a meeting","To reschedule a meeting","To confirm a meeting","To provide her number"], ans:1, exp:"Sarah 明確說 'calling to reschedule our meeting'（重新安排會議）。提供電話號碼是為了確認，非主要目的。" },
+        { id:"l03", diff:"hard", q:`[模擬聽力] 廣播公告：\n\n"Attention passengers: Flight KA-203 to Singapore has been delayed due to adverse weather conditions. The new departure time is 8:45 PM. Passengers are requested to remain in the departure lounge and listen for further announcements. Meal vouchers will be distributed at Gate 12."\n\nWhat will passengers receive at Gate 12?`, opts:["Flight tickets","Weather updates","Meal vouchers","Boarding passes"], ans:2, exp:"公告末尾說 'Meal vouchers will be distributed at Gate 12'（12號登機口發放餐飲券）。" },
+        { id:"l04", diff:"medium", q:`[模擬聽力] 辦公室對話：\n\nWoman: "Did you hear that the conference has been moved to the main auditorium?"\nMan: "Really? I thought it was going to be in Room 204 like last year."\nWoman: "They changed it because they're expecting more than 300 attendees this time."\n\nWhy was the venue changed?`, opts:["Room 204 was damaged","More attendees expected","Lower cost","Closer to parking"], ans:1, exp:"女士說 'because they're expecting more than 300 attendees'（預計超過300名與會者），因此更換場地。" },
+        { id:"l05", diff:"easy", q:`[模擬聽力] 語音信箱：\n\n"Hello, this is a message for Dr. Thompson. Your appointment has been confirmed for Thursday, April 10th at 2:30 PM. Please arrive 15 minutes early to complete the necessary paperwork. If you need to reschedule, please call us at least 24 hours in advance."\n\nWhen is the appointment?`, opts:["Thursday at 2:00 PM","Thursday at 2:30 PM","Friday at 2:30 PM","Thursday at 3:00 PM"], ans:1, exp:"留言明確說 'Thursday, April 10th at 2:30 PM'。注意需提早15分鐘到，但預約時間本身仍是 2:30 PM。" },
+        { id:"l06", diff:"hard", q:`[模擬聽力] 會議對話：\n\nManager: "We need to finalize the budget proposal. Where do we stand?"\nEmployee A: "I've completed the cost analysis, but I still need figures from the sales team."\nEmployee B: "I can have those ready by end of day tomorrow."\nManager: "Perfect. Let's meet Friday morning to go over everything."\n\nWhen will the budget meeting take place?`, opts:["Today","Tomorrow","Friday","Next week"], ans:2, exp:"Manager 說 'Let's meet Friday morning to go over everything'（星期五早上開會討論）。" },
+        { id:"l07", diff:"medium", q:`[模擬聽力] 廣播：\n\n"Good morning, shoppers. Welcome to GreenMart. Today only, all fresh produce is 30% off. Our bakery is offering a buy-one-get-one deal on all breads and pastries until noon. The customer service desk is located on the second floor near the elevator."\n\nUntil when is the bakery deal available?`, opts:["End of day","Until noon","All week","Until 3 PM"], ans:1, exp:"廣播說 'buy-one-get-one deal on all breads and pastries until noon'（麵包烘焙優惠到中午為止）。" },
+        { id:"l08", diff:"easy", q:`[模擬聽力] 對話：\n\nWoman: "Are you going to the company dinner on Friday?"\nMan: "I'd love to, but I have a prior commitment. I'll be out of town for a family event."\nWoman: "That's too bad. It's going to be at The Riverside Restaurant at 7 PM."\n\nWhy can't the man attend the dinner?`, opts:["He has another meeting","He'll be out of town","He doesn't like the restaurant","He has to work late"], ans:1, exp:"男士說 'I'll be out of town for a family event'（因家庭活動不在城裡），無法出席。" },
+      ]
+    };
+
+    /* 自動加入 category 欄位（修正原版缺漏） */
+    Object.keys(QB).forEach(cat => QB[cat].forEach(q => { q.category = cat; }));
+
+    const ALL_Q = [...QB.grammar, ...QB.vocabulary, ...QB.reading, ...QB.listening];
+
+    /* 打亂選項順序，同步更新正確答案 index */
+    function shuffleOpts(q) {
+      const perm = [0,1,2,3].sort(() => Math.random()-0.5);
+      return { ...q, opts: perm.map(i => q.opts[i]), ans: perm.indexOf(q.ans) };
+    }
+
+    /* 取得歷史題庫（內建 + AI）過濾類別後打亂 */
+    function getHistoryPool(cat, aiBank) {
+      const all = [...ALL_Q, ...aiBank];
+      const filtered = cat === "all" ? all : all.filter(q => q.category === cat);
+      return filtered.map(shuffleOpts).sort(() => Math.random()-0.5);
+    }
+
+    /* ── Storage ──────────────────────────────────────────────────────────── */
+    const LS = {
+      get: (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch { return def; } },
+      set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+    };
+
+    /* ── Notion Integration (via Google Apps Script CORS Proxy) ─────────── */
+    /* GAS_PROXY_URL：部署 GAS Web App 後填入                              */
+    const GAS_PROXY_URL = "https://script.google.com/macros/s/AKfycbxnbg3G8ryXG8z-NMnTaeUuo1Lx6qQhRrlGuVqJx8WA-lFvCH-mXKjigpYJcnc3x9iXlg/exec";
+    const NOTION_DB_ID  = "34bebef1-744e-810f-8143-ee182aac5fa9";
+
+    const NOTION_ENABLED = GAS_PROXY_URL !== "" && NOTION_DB_ID !== "";
+    const CAT_LABEL  = { grammar:"文法", vocabulary:"單字", reading:"閱讀", listening:"聽力", all:"全部" };
+    const DIFF_LABEL = { easy:"易", medium:"中", hard:"難" };
+
+    /* 透過 GAS Proxy 呼叫 Notion API
+       body 以 text/plain 送出 JSON → simple request，無 CORS preflight
+       GAS 端用 e.postData.contents 讀取                                  */
+    async function notionFetch(endpoint, body) {
+      const res = await fetch(GAS_PROXY_URL, {
+        method: "POST",
+        body: JSON.stringify({ endpoint, body: body || {} })
+        /* Content-Type 不設定 → 預設 text/plain，不觸發 preflight */
+      });
+      if (!res.ok) throw new Error(`Proxy 錯誤 ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+      return data;
+    }
+
+    async function notionCreateRecord(rec, q) {
+      if (!NOTION_ENABLED) return;
+      const qText = (q?.q || rec.qid).slice(0, 120);
+      await notionFetch("pages", {
+        parent: { database_id: NOTION_DB_ID },
+        properties: {
+          "題目":    { title:     [{ text: { content: `[${CAT_LABEL[rec.cat]||rec.cat}] ${qText}` } }] },
+          "題目ID":  { rich_text: [{ text: { content: rec.qid } }] },
+          "類別":    { select:    { name: CAT_LABEL[rec.cat] || rec.cat } },
+          "結果":    { select:    { name: rec.correct ? "✅ 正確" : "❌ 錯誤" } },
+          "難度":    { select:    { name: DIFF_LABEL[q?.diff] || "中" } },
+          "AI生成":  { checkbox:  !!q?.isAI },
+          "正確答案":{ rich_text: [{ text: { content: q ? q.opts[q.ans] : "" } }] },
+          "作答時間":{ date:      { start: new Date(rec.ts).toISOString() } }
+        }
+      });
+    }
+
+    /* 離線佇列：答題時若 Notion 失敗，存入待同步清單 */
+    async function notionPush(rec, q) {
+      if (!NOTION_ENABLED) return;
+      try {
+        await notionCreateRecord(rec, q);
+      } catch {
+        const pending = LS.get("toeic_notion_pending", []);
+        pending.push({ rec, q: q ? { id:q.id, q:q.q, opts:q.opts, ans:q.ans, diff:q.diff, isAI:q.isAI } : null });
+        LS.set("toeic_notion_pending", pending.slice(-200));
+      }
+    }
+
+    /* 沖刷佇列（網路恢復時呼叫）*/
+    async function notionFlushPending() {
+      if (!NOTION_ENABLED) return 0;
+      const pending = LS.get("toeic_notion_pending", []);
+      if (!pending.length) return 0;
+      let done = 0;
+      const failed = [];
+      for (const item of pending) {
+        try { await notionCreateRecord(item.rec, item.q); done++; }
+        catch { failed.push(item); }
+      }
+      LS.set("toeic_notion_pending", failed);
+      return done;
+    }
+
+    /* 查詢 Notion 紀錄（最多 100 筆，依作答時間倒序）*/
+    async function notionQueryRecords(filterCat) {
+      if (!NOTION_ENABLED) throw new Error("Notion 尚未設定");
+      const body = { sorts: [{ property: "作答時間", direction: "descending" }], page_size: 100 };
+      if (filterCat && filterCat !== "all") {
+        body.filter = { property: "類別", select: { equals: CAT_LABEL[filterCat] || filterCat } };
+      }
+      const data = await notionFetch(`databases/${NOTION_DB_ID}/query`, body);
+      return data.results.map(p => {
+        const pr = p.properties;
+        return {
+          id:     p.id,
+          title:  pr["題目"]?.title?.[0]?.plain_text || "",
+          qid:    pr["題目ID"]?.rich_text?.[0]?.plain_text || "",
+          cat:    pr["類別"]?.select?.name || "",
+          result: pr["結果"]?.select?.name || "",
+          diff:   pr["難度"]?.select?.name || "",
+          isAI:   pr["AI生成"]?.checkbox || false,
+          ans:    pr["正確答案"]?.rich_text?.[0]?.plain_text || "",
+          ts:     pr["作答時間"]?.date?.start || ""
+        };
+      });
+    }
+
+    /* 題庫資料庫 ID */
+    const NOTION_QBANK_ID = "34bebef1-744e-8129-96a7-c7318cd13b20";
+    const ANS_LETTER = ["A","B","C","D"];
+
+    /* 上傳單題到 Notion 題庫資料庫 */
+    async function notionUploadQuestion(q, isFav) {
+      if (!NOTION_ENABLED) return;
+      await notionFetch("pages", {
+        parent: { database_id: NOTION_QBANK_ID },
+        properties: {
+          "題目":    { title:     [{ text:{ content: q.q.slice(0, 200) } }] },
+          "題目ID":  { rich_text: [{ text:{ content: q.id } }] },
+          "選項A":   { rich_text: [{ text:{ content: q.opts[0] || "" } }] },
+          "選項B":   { rich_text: [{ text:{ content: q.opts[1] || "" } }] },
+          "選項C":   { rich_text: [{ text:{ content: q.opts[2] || "" } }] },
+          "選項D":   { rich_text: [{ text:{ content: q.opts[3] || "" } }] },
+          "正確答案":{ select:    { name: ANS_LETTER[q.ans] || "A" } },
+          "解析":    { rich_text: [{ text:{ content: (q.exp || "").slice(0, 1000) } }] },
+          "類別":    { select:    { name: CAT_LABEL[q.category] || q.category } },
+          "難度":    { select:    { name: DIFF_LABEL[q.diff] || "中" } },
+          "AI生成":  { checkbox:  !!q.isAI },
+          "收藏":    { checkbox:  !!isFav }
+        }
+      });
+    }
+
+    /* 批次上傳全部題庫（逐題，避免 rate limit）*/
+    async function notionUploadAllQuestions(allQ, favorites, onProgress) {
+      let done = 0;
+      for (const q of allQ) {
+        try {
+          await notionUploadQuestion(q, favorites.includes(q.id));
+          done++;
+          if (onProgress) onProgress(done, allQ.length);
+          await new Promise(r => setTimeout(r, 300)); // 避免超過速率
+        } catch(e) { /* 略過失敗的單題 */ }
+      }
+      return done;
+    }
+
+    /* ── AI Generator (Google Gemini 免費) ──────────────────────────────── */
+    const GEMINI_KEY = "AIzaSyCj3BFy-wOmohCzziVHFaVWgA-lwk5pOqI";
+    const GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash"];
+
+    async function callGemini(model, prompt) {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`,
+        {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({
+            contents:[{ parts:[{ text: prompt }] }],
+            generationConfig:{ maxOutputTokens:1200, temperature:0.8 }
+          })
+        }
+      );
+      const data = await res.json();
+      if (data.error) throw new Error(`[${data.error.code}] ${data.error.message}`);
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    }
+
+    async function generateAIQ(category) {
+      const labels = { grammar:"文法", vocabulary:"單字", reading:"閱讀", listening:"聽力" };
+      const catLabel = labels[category] || "文法";
+
+      const prompt = category === "reading"
+        ? `你是多益(TOEIC)出題專家。請生成一道閱讀理解類別的多益練習題。題目需包含一段英文短文（公告、信件、廣告或報告），再提出一個問題。只輸出以下JSON，不加任何說明或markdown符號：{"q":"英文短文\\n\\n問題","opts":["選項A","選項B","選項C","選項D"],"ans":0,"exp":"詳細中文解析，說明正確答案原因，並逐一解釋其他三個選項錯誤原因"}`
+        : `你是多益(TOEIC)出題專家。請生成一道${catLabel}類別的多益練習題。只輸出以下JSON，不加任何說明或markdown符號：{"q":"英文題目","opts":["選項A","選項B","選項C","選項D"],"ans":0,"exp":"詳細中文解析，說明正確答案原因，並逐一解釋其他三個選項錯誤原因"}`;
+
+      let lastErr;
+      for (const model of GEMINI_MODELS) {
+        try {
+          const raw = await callGemini(model, prompt);
+          const match = raw.match(/\{[\s\S]*\}/);
+          if (!match) throw new Error("回應格式錯誤");
+          const parsed = JSON.parse(match[0]);
+          return { id:`ai_${Date.now()}`, diff:"medium", isAI:true, category, ...parsed };
+        } catch(e) {
+          lastErr = e;
+        }
+      }
+      throw lastErr;
+    }
+
+    /* ── Constants ────────────────────────────────────────────────────────── */
+    const CATS = [
+      { key:"all",        label:"全部",   icon:"⬡", clr:"#c9b99a" },
+      { key:"grammar",    label:"文法",   icon:"Aa", clr:"#7eb8da" },
+      { key:"vocabulary", label:"單字",   icon:"★",  clr:"#7edaa0" },
+      { key:"reading",    label:"閱讀",   icon:"◉",  clr:"#da7eb8" },
+      { key:"listening",  label:"聽力",   icon:"◎",  clr:"#b87eda" },
+    ];
+    const DIFF = { easy:{ label:"初級", clr:"#4ade80" }, medium:{ label:"中級", clr:"#fb923c" }, hard:{ label:"高級", clr:"#f87171" } };
+    const GRADE = (p) => p>=90?"S":p>=75?"A":p>=60?"B":p>=45?"C":"D";
+    const GRADE_CLR = { S:"#f59e0b", A:"#4ade80", B:"#60a5fa", C:"#fb923c", D:"#f87171" };
+    const fmtTime = (s) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+    const getPool = (c) => c === "all" ? ALL_Q : ALL_Q.filter(q => q.category === c);
+
+    /* ── CSS ──────────────────────────────────────────────────────────────── */
+    const CSS = `
+      @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DM+Serif+Display:ital@0;1&display=swap');
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg: #efefef;
+        --card: #ffffff;
+        --text: #1a1a1a;
+        --sub: #9e9e9e;
+        --border: #e8e8e8;
+        --dim: #f5f5f5;
+        --green: #52b788;
+        --red: #e05252;
+      }
+
+      .root { min-height:100vh; background:var(--bg); font-family:'Noto Sans TC',sans-serif; color:var(--text); }
+      .screen { max-width:500px; margin:0 auto; padding:20px 16px 80px; min-height:100vh; }
+
+      /* ── Header ── */
+      .home-header {
+        background:var(--text); border-radius:24px; padding:22px 20px;
+        margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;
+      }
+      .brand { font-family:'DM Serif Display',serif; font-size:28px; color:#fff; letter-spacing:-0.5px; line-height:1; }
+      .brand-accent { color:#cccccc; font-style:italic; }
+      .brand-sub { font-size:11px; color:rgba(255,255,255,0.45); margin-top:4px; letter-spacing:0.05em; }
+      .icon-btn {
+        background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);
+        border-radius:14px; padding:10px 14px; color:rgba(255,255,255,0.8);
+        cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:background 0.15s;
+      }
+      .icon-btn:hover { background:rgba(255,255,255,0.18); }
+
+      /* ── Stat Row ── */
+      .stat-row { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:20px; }
+      .stat-card {
+        background:var(--card); border-radius:18px; padding:14px 6px;
+        text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px;
+        box-shadow:0 2px 10px rgba(0,0,0,0.06);
+      }
+      .stat-accent { background:#1a1a1a; }
+      .stat-val { font-size:18px; font-weight:900; color:var(--text); }
+      .stat-accent .stat-val { color:#fff; }
+      .stat-lbl { font-size:10px; color:var(--sub); }
+      .stat-accent .stat-lbl { color:rgba(255,255,255,0.5); }
+
+      /* ── Section Label ── */
+      .section-label {
+        font-size:11px; font-weight:700; color:var(--sub);
+        letter-spacing:0.1em; text-transform:uppercase; margin-bottom:12px; margin-top:8px;
+      }
+
+      /* ── Category Grid ── */
+      .cat-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:20px; }
+      .cat-btn {
+        background:var(--card); border:2px solid var(--border); border-radius:18px;
+        padding:12px 4px 10px; cursor:pointer; display:flex; flex-direction:column;
+        align-items:center; gap:5px; color:var(--sub); transition:all 0.15s;
+        box-shadow:0 2px 8px rgba(0,0,0,0.04);
+      }
+      .cat-btn:hover { border-color:#bbb; color:var(--text); }
+      .cat-icon { font-size:18px; }
+      .cat-label { font-size:11px; font-weight:700; }
+      .cat-count { font-size:9px; opacity:0.55; }
+
+      /* ── Action Grid ── */
+      .action-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+      .action-btn {
+        display:flex; align-items:center; gap:12px; padding:18px 14px;
+        border-radius:20px; border:none; cursor:pointer; text-align:left;
+        transition:transform 0.12s, box-shadow 0.12s; font-family:'Noto Sans TC',sans-serif;
+        box-shadow:0 2px 14px rgba(0,0,0,0.08);
+      }
+      .action-btn:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.13); }
+      .action-btn:active { transform:scale(0.98); }
+      .action-btn:disabled { opacity:0.5; }
+      .action-icon { font-size:24px; flex-shrink:0; }
+      .action-title { font-size:13px; font-weight:800; }
+      .action-sub { font-size:11px; margin-top:2px; }
+
+      .btn-practice { background:#1a1a1a; }
+      .btn-practice .action-title { color:#fff; }
+      .btn-practice .action-sub { color:rgba(255,255,255,0.4); }
+      .btn-exam { background:#3a3a3a; }
+      .btn-exam .action-title { color:#fff; }
+      .btn-exam .action-sub { color:rgba(255,255,255,0.4); }
+      .btn-ai { background:var(--card); border:2px solid var(--border) !important; }
+      .btn-ai .action-title { color:var(--text); }
+      .btn-ai .action-sub { color:var(--sub); }
+      .btn-wrong { background:var(--card); border:2px solid var(--border) !important; }
+      .btn-wrong .action-title { color:var(--text); }
+      .btn-wrong .action-sub { color:var(--sub); }
+      .btn-history { background:linear-gradient(135deg,#1a1a1a 0%,#3a3a3a 100%); border:none !important; }
+      .btn-history .action-title { color:#fff; }
+      .btn-history .action-sub { color:#aaa; }
+      .btn-history .action-icon { color:#fff; }
+
+      /* ── Error ── */
+      .err-box { background:#fff5f5; border:1px solid #ffcccc; border-radius:12px; padding:10px 14px; font-size:13px; color:#c0392b; margin-bottom:12px; }
+
+      /* ── Quiz Nav ── */
+      .quiz-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+      .back-btn { background:none; border:none; color:var(--sub); font-size:14px; cursor:pointer; padding:0; font-family:'Noto Sans TC',sans-serif; }
+      .quiz-nav-center { text-align:center; }
+      .quiz-mode-tag { font-size:11px; font-weight:700; color:var(--sub); letter-spacing:0.08em; text-transform:uppercase; }
+      .quiz-progress-text { font-size:16px; font-weight:800; color:var(--text); margin-top:2px; }
+      .timer-badge { background:var(--text); border-radius:10px; padding:6px 12px; font-size:15px; font-weight:800; color:#fff; font-variant-numeric:tabular-nums; letter-spacing:0.05em; }
+
+      /* ── Progress ── */
+      .progress-track { height:4px; background:var(--border); border-radius:4px; margin-bottom:20px; overflow:hidden; }
+      .progress-fill { height:100%; background:var(--text); border-radius:4px; transition:width 0.4s ease; }
+
+      /* ── Question Card ── */
+      .qcard { background:var(--card); border-radius:24px; padding:24px 20px; box-shadow:0 4px 20px rgba(0,0,0,0.07); }
+      .qcard-meta { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+      .tag { font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; border:1.5px solid; }
+      .tag-ai { background:#f0f8ff; border-color:#cce0f0; color:#2980b9; }
+      .qtext { font-size:15px; line-height:1.85; color:var(--text); margin-bottom:20px; white-space:pre-wrap; }
+
+      /* ── Options ── */
+      .opts { display:flex; flex-direction:column; gap:10px; }
+      .opt {
+        width:100%; display:flex; align-items:flex-start; gap:12px; padding:14px 16px;
+        background:var(--dim); border:2px solid var(--border); border-radius:14px;
+        color:var(--sub); font-size:14px; cursor:pointer; text-align:left;
+        font-family:'Noto Sans TC',sans-serif; line-height:1.5; transition:all 0.12s;
+      }
+      .opt:hover:not(.opt-correct):not(.opt-wrong):not(.opt-dim) { border-color:#aaa; color:var(--text); background:#f0f0f0; }
+      .opt-selected { background:var(--text); border-color:var(--text); color:#fff; }
+      .opt-selected .opt-letter { background:rgba(255,255,255,0.15); color:#fff; }
+      .opt-correct { background:#f0fff6; border-color:#52b788; color:#1d6b45; }
+      .opt-correct .opt-letter { background:#d4eddf; color:#1d6b45; }
+      .opt-wrong { background:#fff5f5; border-color:#e05252; color:#b71c1c; }
+      .opt-wrong .opt-letter { background:#fdd; color:#b71c1c; }
+      .opt-dim { opacity:0.32; }
+      .opt-letter {
+        width:26px; height:26px; border-radius:8px; background:var(--border);
+        display:flex; align-items:center; justify-content:center;
+        font-size:11px; font-weight:900; flex-shrink:0; color:var(--sub);
+      }
+      .opt-text { flex:1; }
+      .opt-icon { font-size:16px; font-weight:900; flex-shrink:0; align-self:center; }
+
+      /* ── Explanation ── */
+      .explanation { background:var(--dim); border:none; border-left:3px solid var(--green); border-radius:14px; padding:16px 18px; margin-top:16px; }
+      .exp-title { font-size:11px; font-weight:800; color:#555; letter-spacing:0.08em; margin-bottom:8px; text-transform:uppercase; }
+      .exp-text { font-size:13px; color:#444; line-height:1.85; }
+
+      /* ── Buttons ── */
+      .nav-row { display:flex; gap:10px; margin-top:16px; }
+      .primary-btn { background:var(--text); border:none; border-radius:14px; padding:14px 20px; color:#fff; font-weight:800; font-size:14px; cursor:pointer; font-family:'Noto Sans TC',sans-serif; transition:opacity 0.15s; }
+      .primary-btn:hover { opacity:0.85; }
+      .primary-btn:disabled { opacity:0.3; }
+      .secondary-btn { background:var(--dim); border:2px solid var(--border); border-radius:14px; padding:14px 20px; color:var(--sub); font-weight:700; font-size:14px; cursor:pointer; font-family:'Noto Sans TC',sans-serif; }
+
+      /* ── Score Card ── */
+      .score-card { background:var(--card); border-radius:28px; padding:40px 24px 32px; text-align:center; margin-bottom:20px; position:relative; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.07); }
+      .score-card::before { content:''; position:absolute; top:-30px; right:-30px; width:120px; height:120px; border-radius:50%; background:rgba(0,0,0,0.03); }
+      .score-grade { font-family:'DM Serif Display',serif; font-size:90px; line-height:1; margin-bottom:4px; }
+      .score-pct { font-size:40px; font-weight:900; color:var(--text); }
+      .score-detail { font-size:14px; color:var(--sub); margin-top:8px; }
+      .score-time { font-size:13px; color:var(--sub); margin-top:4px; }
+      .score-msg { font-size:16px; margin-top:14px; color:var(--text); }
+
+      /* ── Review ── */
+      .review-item { background:var(--card); border-radius:16px; padding:16px 18px; margin-bottom:10px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+      .review-ok { border-left:3px solid var(--green); }
+      .review-fail { border-left:3px solid var(--red); }
+      .review-header { display:flex; justify-content:space-between; margin-bottom:8px; }
+      .review-num { font-size:12px; color:var(--sub); font-weight:700; }
+      .review-badge { font-size:12px; font-weight:800; }
+      .badge-ok { color:var(--green); }
+      .badge-fail { color:var(--red); }
+      .review-q { font-size:13px; color:#666; line-height:1.6; margin-bottom:6px; }
+      .review-ans { font-size:12px; }
+
+      /* ── Stats ── */
+      .big-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px; }
+      .big-num-card { background:var(--card); border-radius:20px; padding:24px 20px; text-align:center; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+      .big-num { font-size:40px; font-weight:900; line-height:1; color:var(--text); }
+      .big-label { font-size:11px; color:var(--sub); margin-top:6px; }
+
+      .heatmap { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:24px; }
+      .heat-cell { width:28px; height:28px; border-radius:8px; cursor:default; }
+
+      .cat-stat-row { background:var(--card); border-radius:16px; padding:16px 18px; margin-bottom:10px; box-shadow:0 2px 10px rgba(0,0,0,0.05); }
+      .cat-stat-header { display:flex; justify-content:space-between; margin-bottom:10px; }
+      .cat-stat-label { font-weight:700; font-size:14px; color:var(--text); }
+      .cat-stat-pct { font-size:15px; font-weight:900; color:var(--text); }
+      .cat-progress-track { height:6px; background:var(--border); border-radius:4px; overflow:hidden; }
+      .cat-progress-fill { height:100%; border-radius:4px; transition:width 0.6s ease; }
+      .cat-stat-sub { font-size:11px; color:var(--sub); margin-top:6px; }
+
+      /* ── Toast ── */
+      .toast { position:fixed; top:20px; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; padding:12px 24px; border-radius:30px; font-weight:800; font-size:14px; z-index:9999; font-family:'Noto Sans TC',sans-serif; box-shadow:0 4px 20px rgba(0,0,0,0.25); animation:slideDown 0.2s ease; }
+      .toast-err { background:var(--red); }
+
+      @keyframes slideDown { from{opacity:0;transform:translateX(-50%) translateY(-10px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+      .fade-in { animation:fadeIn 0.25s ease; }
+      @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+      @media (max-width:360px) {
+        .brand { font-size:22px; }
+        .cat-label { font-size:10px; }
+        .action-title { font-size:12px; }
+      }
+    `;
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       MAIN APP
+    ═══════════════════════════════════════════════════════════════════════ */
+    function App() {
+      const [screen, setScreen] = useState("home");
+      const [cat, setCat] = useState("all");
+      const [mode, setMode] = useState("practice");
+      const [queue, setQueue] = useState([]);
+      const [qIdx, setQIdx] = useState(0);
+      const [selected, setSelected] = useState(null);
+      const [revealed, setRevealed] = useState(false);
+      const [results, setResults] = useState([]);
+      const [aiQ, setAiQ] = useState(null);
+      const [aiLoading, setAiLoading] = useState(false);
+      const [aiErr, setAiErr] = useState("");
+      const [timer, setTimer] = useState(0);
+      const [timerOn, setTimerOn] = useState(false);
+      const [toast, setToast] = useState(null);
+      const [records, setRecords] = useState(() => LS.get("toeic_records", []));
+      const [wrongIds, setWrongIds] = useState(() => LS.get("toeic_wrong", []));
+      const [streak, setStreak] = useState(() => LS.get("toeic_streak", 0));
+      const [animKey, setAnimKey] = useState(0);
+      const [aiBank, setAiBank] = useState(() => LS.get("toeic_ai_bank", []));
+      const [favorites, setFavorites] = useState(() => LS.get("toeic_favorites", []));
+      const [pendingCount, setPendingCount] = useState(() => LS.get("toeic_notion_pending", []).length);
+      const [notionStatus, setNotionStatus] = useState(null); // null | "syncing" | "ok" | "err"
+
+      useEffect(() => { LS.set("toeic_records", records); }, [records]);
+      useEffect(() => { LS.set("toeic_wrong", wrongIds); }, [wrongIds]);
+      useEffect(() => { LS.set("toeic_streak", streak); }, [streak]);
+      useEffect(() => { LS.set("toeic_ai_bank", aiBank); }, [aiBank]);
+      useEffect(() => { LS.set("toeic_favorites", favorites); }, [favorites]);
+
+      const toggleFavorite = (qid) => {
+        setFavorites(prev => prev.includes(qid) ? prev.filter(id => id !== qid) : [...prev, qid]);
+      };
+
+      /* 網路恢復時自動沖刷待同步佇列 */
+      useEffect(() => {
+        if (!NOTION_ENABLED) return;
+        const flush = () => {
+          setPendingCount(LS.get("toeic_notion_pending", []).length);
+          notionFlushPending().then(n => {
+            if (n > 0) setPendingCount(LS.get("toeic_notion_pending", []).length);
+          });
+        };
+        window.addEventListener("online", flush);
+        flush();
+        return () => window.removeEventListener("online", flush);
+      }, []);
+
+      const manualSync = async () => {
+        if (!NOTION_ENABLED) { showToast("請先設定 Notion Token", "err"); return; }
+        setNotionStatus("syncing");
+        try {
+          const n = await notionFlushPending();
+          setPendingCount(LS.get("toeic_notion_pending", []).length);
+          setNotionStatus("ok");
+          showToast(n > 0 ? `已同步 ${n} 筆到 Notion ✓` : "Notion 已是最新 ✓");
+          setTimeout(() => setNotionStatus(null), 3000);
+        } catch {
+          setNotionStatus("err");
+          showToast("Notion 同步失敗", "err");
+          setTimeout(() => setNotionStatus(null), 3000);
+        }
+      };
+      useEffect(() => {
+        if (!timerOn) return;
+        const t = setInterval(() => setTimer(p => p+1), 1000);
+        return () => clearInterval(t);
+      }, [timerOn]);
+
+      const showToast = (msg, type="ok") => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 2200);
+      };
+      const curQ = screen === "quiz" ? queue[qIdx] : aiQ;
+
+      const startQuiz = (m, pool) => {
+        const p = pool || getPool(cat);
+        const shuffled = [...p].sort(() => Math.random() - 0.5);
+        const count = m === "exam" ? Math.min(10, shuffled.length) : shuffled.length;
+        setMode(m); setQueue(shuffled.slice(0,count)); setQIdx(0);
+        setSelected(null); setRevealed(false); setResults([]);
+        setTimer(0); setTimerOn(m === "exam");
+        setAnimKey(k => k+1); setScreen("quiz");
+      };
+
+      const doAI = async () => {
+        setAiLoading(true); setAiErr(""); setAiQ(null);
+        try {
+          const c = cat === "all" ? ["grammar","vocabulary","reading","listening"][Math.floor(Math.random()*4)] : cat;
+          const q = await generateAIQ(c);
+          setAiQ(q); setSelected(null); setRevealed(false); setAnimKey(k => k+1);
+          /* 存入 AI 題庫（最多保留 200 題）*/
+          setAiBank(prev => {
+            const next = [q, ...prev.filter(x => x.id !== q.id)].slice(0, 200);
+            return next;
+          });
+        } catch(e) { setAiErr("AI 生成失敗：" + (e.message || "未知錯誤") + " ⚠️"); }
+        setAiLoading(false);
+      };
+
+      const pickAnswer = (i) => {
+        if (revealed) return;
+        setSelected(i);
+      };
+
+      const recordAnswer = (i) => {
+        const q = curQ; if (!q) return;
+        const correct = i === q.ans;
+        const rec = { qid:q.id, correct, cat:q.category, ts:Date.now() };
+        setRecords(prev => [rec, ...prev].slice(0,1000));
+        setResults(prev => [...prev, { q, sel:i, correct }]);
+        if (!correct) { setWrongIds(prev => prev.includes(q.id) ? prev : [...prev, q.id]); setStreak(0); }
+        else { setWrongIds(prev => prev.filter(id => id !== q.id)); setStreak(s => s+1); }
+        notionPush(rec, q);
+      };
+
+      const confirmAnswer = () => { if (selected===null) return; recordAnswer(selected); setRevealed(true); };
+
+      const nextQ = () => {
+        const next = qIdx + 1;
+        if (next >= queue.length) { setTimerOn(false); setScreen("review"); return; }
+        setQIdx(next); setSelected(null); setRevealed(false); setAnimKey(k => k+1);
+      };
+
+      const wrongQuiz = () => {
+        const pool = wrongIds.map(id => ALL_Q.find(q => q.id===id)).filter(Boolean);
+        if (!pool.length) { showToast("錯題本是空的！","err"); return; }
+        startQuiz("practice", pool);
+      };
+
+      const historyQuiz = () => {
+        const pool = getHistoryPool(cat, aiBank);
+        if (!pool.length) { showToast("歷史題庫是空的！","err"); return; }
+        startQuiz("history", pool);
+      };
+
+      const total = records.length;
+      const correct = records.filter(r => r.correct).length;
+      const acc = total ? Math.round(correct/total*100) : 0;
+      const histTotal = [...ALL_Q, ...aiBank];
+      const qCount = {
+        all: ALL_Q.length, grammar:QB.grammar.length, vocabulary:QB.vocabulary.length,
+        reading:QB.reading.length, listening:QB.listening.length,
+        history: cat === "all" ? histTotal.length : histTotal.filter(q => q.category === cat).length
+      };
+      const catStats = CATS.filter(c => c.key !== "all").map(c => {
+        const r = records.filter(x => x.cat === c.key);
+        const cor = r.filter(x => x.correct).length;
+        return { ...c, total:r.length, correct:cor, pct:r.length ? Math.round(cor/r.length*100) : 0 };
+      });
+
+      return (
+        <>
+          <style>{CSS}</style>
+          <div className="root">
+            {toast && <div className={`toast ${toast.type==="err"?"toast-err":""}`}>{toast.msg}</div>}
+            {screen === "home" && (
+              <HomeScreen cat={cat} setCat={setCat} startQuiz={startQuiz}
+                doAI={doAI} aiQ={aiQ} aiLoading={aiLoading} aiErr={aiErr}
+                selected={selected} revealed={revealed} pickAnswer={pickAnswer}
+                setScreen={setScreen} streak={streak} acc={acc} total={total}
+                wrongIds={wrongIds} nextQ={nextQ} wrongQuiz={wrongQuiz}
+                animKey={animKey} qCount={qCount} historyQuiz={historyQuiz}
+                aiBank={aiBank} confirmAnswer={confirmAnswer}
+                favorites={favorites} toggleFavorite={toggleFavorite} />
+            )}
+            {screen === "quiz" && curQ && (
+              <QuizScreen q={curQ} sel={selected} revealed={revealed} mode={mode}
+                pickAnswer={pickAnswer} confirmAnswer={confirmAnswer} nextQ={nextQ}
+                qIdx={qIdx} total={queue.length} timer={timer}
+                setScreen={setScreen} animKey={animKey}
+                favorites={favorites} toggleFavorite={toggleFavorite} />
+            )}
+            {screen === "review" && (
+              <ReviewScreen results={results} timer={timer} setScreen={setScreen}
+                startQuiz={startQuiz} cat={cat} mode={mode} historyQuiz={historyQuiz} />
+            )}
+            {screen === "stats" && (
+              <StatsScreen acc={acc} total={total} correct={correct}
+                catStats={catStats} streak={streak} wrongIds={wrongIds}
+                setScreen={setScreen} wrongQuiz={wrongQuiz} records={records}
+                pendingCount={pendingCount} notionStatus={notionStatus} manualSync={manualSync}
+                allQ={[...ALL_Q, ...aiBank]} favorites={favorites} />
+            )}
+          </div>
+        </>
+      );
+    }
+
+    /* ── Home Screen ──────────────────────────────────────────────────────── */
+    function HomeScreen({ cat, setCat, startQuiz, doAI, aiQ, aiLoading, aiErr, selected, revealed, pickAnswer, setScreen, streak, acc, total, wrongIds, nextQ, wrongQuiz, animKey, qCount, historyQuiz, aiBank, confirmAnswer, favorites, toggleFavorite }) {
+      return (
+        <div className="screen">
+          <div className="home-header">
+            <div>
+              <div className="brand">TOEIC<span className="brand-accent">練功坊</span></div>
+              <div className="brand-sub">多益全科練習平台</div>
+            </div>
+            <button className="icon-btn" onClick={() => setScreen("stats")}>
+              <span style={{fontSize:20}}>📊</span>
+              <span style={{fontSize:11}}>成績</span>
+            </button>
+          </div>
+          <div className="stat-row">
+            {[
+              { icon:"🔥", val:streak, label:"連勝" },
+              { icon:"🎯", val:`${acc}%`, label:"正確率" },
+              { icon:"📝", val:total, label:"已作答" },
+              { icon:"📌", val:wrongIds.length, label:"錯題", accent:true },
+            ].map((s,i) => (
+              <div key={i} className={`stat-card ${s.accent?"stat-accent":""}`}>
+                <span style={{fontSize:22}}>{s.icon}</span>
+                <div className="stat-val">{s.val}</div>
+                <div className="stat-lbl">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          <div className="section-label">選擇類別</div>
+          <div className="cat-grid">
+            {CATS.map(c => (
+              <button key={c.key}
+                className={`cat-btn ${cat===c.key?"cat-active":""}`}
+                style={cat===c.key ? { background:c.clr+"22", borderColor:c.clr, color:c.clr } : {}}
+                onClick={() => setCat(c.key)}>
+                <span className="cat-icon">{c.icon}</span>
+                <span className="cat-label">{c.label}</span>
+                <span className="cat-count">{qCount[c.key]}題</span>
+              </button>
+            ))}
+          </div>
+          <div className="action-grid">
+            <button className="action-btn btn-practice" onClick={() => startQuiz("practice")}>
+              <span className="action-icon">✦</span>
+              <div><div className="action-title">練習模式</div><div className="action-sub">即時查看解析</div></div>
+            </button>
+            <button className="action-btn btn-exam" onClick={() => startQuiz("exam")}>
+              <span className="action-icon">◈</span>
+              <div><div className="action-title">模擬測驗</div><div className="action-sub">10題計時挑戰</div></div>
+            </button>
+            <button className="action-btn btn-ai" onClick={doAI} disabled={aiLoading}>
+              <span className="action-icon">{aiLoading?"⏳":"✨"}</span>
+              <div>
+                <div className="action-title">{aiLoading?"AI 生成中...":"AI 即時出題"}</div>
+                <div className="action-sub">Gemini 免費生成</div>
+              </div>
+            </button>
+            <button className="action-btn btn-wrong" onClick={wrongQuiz}>
+              <span className="action-icon">📌</span>
+              <div><div className="action-title">錯題複習</div><div className="action-sub">{wrongIds.length} 題待複習</div></div>
+            </button>
+            <button className="action-btn btn-history" onClick={historyQuiz}
+              style={{gridColumn:"1 / -1"}}>
+              <span className="action-icon">📚</span>
+              <div>
+                <div className="action-title">歷史題庫</div>
+                <div className="action-sub">
+                  全部 {qCount.history} 題（含 AI {aiBank.length} 題）· 選項隨機排列
+                </div>
+              </div>
+            </button>
+          </div>
+          {aiErr && <div className="err-box">{aiErr}</div>}
+          {aiQ && <div className="section-label" style={{marginTop:24}}>AI 生成題目</div>}
+          {aiQ && (
+            <QCard key={animKey} q={aiQ} sel={selected} revealed={revealed}
+              pickAnswer={pickAnswer} mode="practice" confirmAnswer={confirmAnswer}
+              onNext={nextQ} isHome onAI={doAI} aiLoading={aiLoading}
+              isFav={favorites.includes(aiQ.id)} onToggleFav={() => toggleFavorite(aiQ.id)} />
+          )}
+        </div>
+      );
+    }
+
+    /* ── Quiz Screen ──────────────────────────────────────────────────────── */
+    function QuizScreen({ q, sel, revealed, mode, pickAnswer, confirmAnswer, nextQ, qIdx, total, timer, setScreen, animKey, favorites, toggleFavorite }) {
+      const progress = (qIdx+1) / total * 100;
+      const modeLabel = mode==="exam" ? "模擬測驗" : mode==="history" ? "歷史題庫" : "練習模式";
+      return (
+        <div className="screen">
+          <div className="quiz-nav">
+            <button className="back-btn" onClick={() => setScreen("home")}>← 離開</button>
+            <div className="quiz-nav-center">
+              <div className="quiz-mode-tag">{modeLabel}</div>
+              <div className="quiz-progress-text">{qIdx+1} <span style={{color:"#555"}}>/</span> {total}</div>
+            </div>
+            {mode==="exam" ? <div className="timer-badge">{fmtTime(timer)}</div> : <div style={{width:64}} />}
+          </div>
+          <div className="progress-track">
+            <div className="progress-fill" style={{width:`${progress}%`}} />
+          </div>
+          <QCard key={animKey} q={q} sel={sel} revealed={revealed}
+            pickAnswer={pickAnswer} mode={mode} onNext={nextQ} confirmAnswer={confirmAnswer}
+            isFav={favorites.includes(q.id)} onToggleFav={() => toggleFavorite(q.id)} />
+        </div>
+      );
+    }
+
+    /* ── Question Card ────────────────────────────────────────────────────── */
+    function QCard({ q, sel, revealed, pickAnswer, mode, onNext, confirmAnswer, isHome, onAI, aiLoading, isFav, onToggleFav }) {
+      const catObj = CATS.find(c => c.key === q.category) || CATS[0];
+      const diffObj = DIFF[q.diff] || DIFF.medium;
+      return (
+        <div className="qcard fade-in" style={{position:"relative"}}>
+          {/* 星形收藏按鈕 */}
+          <button onClick={onToggleFav}
+            style={{position:"absolute", top:14, right:14, background:"none", border:"none",
+              fontSize:22, cursor:"pointer", lineHeight:1, padding:4,
+              color: isFav ? "#f5a623" : "#ccc", transition:"color 0.2s"}}>
+            {isFav ? "★" : "☆"}
+          </button>
+
+          <div className="qcard-meta" style={{paddingRight:36}}>
+            <span className="tag" style={{borderColor:catObj.clr+"66", color:catObj.clr, background:catObj.clr+"11"}}>
+              {catObj.icon} {catObj.label}
+            </span>
+            {q.isAI && <span className="tag tag-ai">✨ AI生成</span>}
+            <span className="tag" style={{borderColor:diffObj.clr+"66", color:diffObj.clr, background:diffObj.clr+"11"}}>
+              {diffObj.label}
+            </span>
+          </div>
+          <div className="qtext">{q.q}</div>
+          <div className="opts">
+            {q.opts.map((opt, i) => {
+              const isCorrect = i === q.ans, isSelected = i === sel;
+              let cls = "opt";
+              if (revealed) {
+                if (isCorrect) cls += " opt-correct";
+                else if (isSelected) cls += " opt-wrong";
+                else cls += " opt-dim";
+              } else if (isSelected) cls += " opt-selected";
+              return (
+                <button key={i} className={cls} onClick={() => pickAnswer(i)}>
+                  <span className="opt-letter">{["A","B","C","D"][i]}</span>
+                  <span className="opt-text">{opt}</span>
+                  {revealed && isCorrect && <span className="opt-icon">✓</span>}
+                  {revealed && isSelected && !isCorrect && <span className="opt-icon">✗</span>}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 產生答案按鈕：選題後、揭曉前顯示 */}
+          {sel !== null && !revealed && (
+            <button className="primary-btn" onClick={confirmAnswer} style={{marginTop:16, width:"100%"}}>
+              產生答案
+            </button>
+          )}
+
+          {revealed && (
+            <div className="explanation fade-in">
+              <div className="exp-title">💡 解析</div>
+              <div className="exp-text">{q.exp}</div>
+            </div>
+          )}
+          {revealed && (
+            <div className="nav-row">
+              {!isHome && onNext && (
+                <button className="primary-btn" onClick={onNext} style={{flex:1}}>
+                  下一題 →
+                </button>
+              )}
+              {isHome && onAI && (
+                <button className="secondary-btn" onClick={onAI} disabled={aiLoading} style={{flex:1}}>
+                  {aiLoading ? "生成中..." : "✨ AI出題下一題"}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    /* ── Review Screen ────────────────────────────────────────────────────── */
+    function ReviewScreen({ results, timer, setScreen, startQuiz, cat, mode, historyQuiz }) {
+      const cor = results.filter(r => r.correct).length;
+      const pct = Math.round(cor/results.length*100);
+      const grade = GRADE(pct);
+      return (
+        <div className="screen">
+          <div className="quiz-nav">
+            <button className="back-btn" onClick={() => setScreen("home")}>← 首頁</button>
+            <div className="quiz-nav-center"><div className="quiz-mode-tag">測驗結果</div></div>
+            <div style={{width:64}} />
+          </div>
+          <div className="score-card fade-in">
+            <div className="score-grade" style={{color:GRADE_CLR[grade]}}>{grade}</div>
+            <div className="score-pct">{pct}<span style={{fontSize:24}}>%</span></div>
+            <div className="score-detail">{cor} / {results.length} 題正確</div>
+            <div className="score-time">⏱ 用時 {fmtTime(timer)}</div>
+            <div className="score-msg">{pct>=90?"🏆 卓越表現！":pct>=75?"🎉 表現優秀！":pct>=60?"👍 繼續加油！":"💪 再接再厲！"}</div>
+          </div>
+          {mode === "history" ? (
+            <button className="primary-btn" style={{width:"100%", marginBottom:12}} onClick={historyQuiz}>
+              🔀 重新隨機作答
+            </button>
+          ) : (
+            <button className="primary-btn" style={{width:"100%", marginBottom:12}} onClick={() => startQuiz("exam")}>
+              🔄 再測一次
+            </button>
+          )}
+          <div className="section-label">逐題回顧</div>
+          {results.map((r, i) => (
+            <div key={i} className={`review-item ${r.correct?"review-ok":"review-fail"}`}>
+              <div className="review-header">
+                <span className="review-num">Q{i+1}</span>
+                <span className={`review-badge ${r.correct?"badge-ok":"badge-fail"}`}>
+                  {r.correct ? "✓ 正確" : "✗ 錯誤"}
+                </span>
+              </div>
+              <div className="review-q">{r.q.q.slice(0,90)}{r.q.q.length>90?"…":""}</div>
+              {!r.correct && (
+                <div className="review-ans">
+                  <span style={{color:"#e05252"}}>你的答案：{r.q.opts[r.sel]}</span>
+                  <span style={{color:"#52b788", marginLeft:12}}>正確：{r.q.opts[r.q.ans]}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    /* ── Stats Screen ─────────────────────────────────────────────────────── */
+    function StatsScreen({ acc, total, correct, catStats, streak, wrongIds, setScreen, wrongQuiz, records,
+                           pendingCount, notionStatus, manualSync, allQ, favorites }) {
+      const recent = records.slice(0, 14).reverse();
+      const [notionTab, setNotionTab] = React.useState(false);
+      const [notionFilter, setNotionFilter] = React.useState("all");
+      const [notionRows, setNotionRows] = React.useState(null);
+      const [notionLoading, setNotionLoading] = React.useState(false);
+      const [notionErr, setNotionErr] = React.useState("");
+      const [uploadProgress, setUploadProgress] = React.useState(null); // null | {done, total}
+      const [uploadDone, setUploadDone] = React.useState(false);
+      const [uploadErr, setUploadErr] = React.useState("");
+
+      const startUpload = async () => {
+        if (!allQ || allQ.length === 0) return;
+        setUploadProgress({ done: 0, total: allQ.length });
+        setUploadDone(false); setUploadErr("");
+        try {
+          const done = await notionUploadAllQuestions(allQ, favorites || [], (done, total) => {
+            setUploadProgress({ done, total });
+          });
+          setUploadDone(true);
+          setUploadProgress({ done, total: allQ.length });
+        } catch(e) {
+          setUploadErr(e.message || "上傳失敗");
+        }
+      };
+
+      const loadNotion = async (f) => {
+        setNotionLoading(true); setNotionErr(""); setNotionRows(null);
+        try {
+          const rows = await notionQueryRecords(f || notionFilter);
+          setNotionRows(rows);
+        } catch(e) { setNotionErr(e.message || "查詢失敗"); }
+        setNotionLoading(false);
+      };
+
+      const switchFilter = (f) => { setNotionFilter(f); loadNotion(f); };
+
+      return (
+        <div className="screen">
+          <div className="quiz-nav">
+            <button className="back-btn" onClick={() => setScreen("home")}>← 返回</button>
+            <div className="quiz-nav-center"><div className="quiz-mode-tag">學習統計</div></div>
+            <div style={{width:64}} />
+          </div>
+
+          {/* ─ 本機統計 ─ */}
+          <div className="big-stats fade-in">
+            {[
+              { val:`${acc}%`, label:"總正確率" },
+              { val:total, label:"已作答" },
+              { val:streak, label:"連勝紀錄" },
+              { val:wrongIds.length, label:"待複習" },
+            ].map((s,i) => (
+              <div key={i} className="big-num-card">
+                <div className="big-num">{s.val}</div>
+                <div className="big-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
+          {recent.length > 0 && (
+            <>
+              <div className="section-label">最近 {recent.length} 題</div>
+              <div className="heatmap">
+                {recent.map((r, i) => (
+                  <div key={i} className="heat-cell"
+                    style={{background:r.correct?"#52b78866":"#e0525266", border:`1px solid ${r.correct?"#52b788":"#e05252"}55`}}
+                    title={r.correct?"正確":"錯誤"} />
+                ))}
+              </div>
+            </>
+          )}
+          <div className="section-label">各類別表現</div>
+          {catStats.map(c => (
+            <div key={c.key} className="cat-stat-row fade-in">
+              <div className="cat-stat-header">
+                <span className="cat-stat-label">{c.icon} {c.label}</span>
+                <span className="cat-stat-pct" style={{color:c.total?"#1a1a1a":"#bbb"}}>
+                  {c.total ? `${c.pct}%` : "尚未作答"}
+                </span>
+              </div>
+              <div className="cat-progress-track">
+                <div className="cat-progress-fill" style={{width:`${c.pct}%`, background:c.clr}} />
+              </div>
+              {c.total > 0 && <div className="cat-stat-sub">{c.correct} / {c.total} 題正確</div>}
+            </div>
+          ))}
+          {wrongIds.length > 0 && (
+            <button className="action-btn btn-wrong"
+              style={{width:"100%", marginTop:8, justifyContent:"center"}}
+              onClick={wrongQuiz}>
+              📌 開始錯題複習（{wrongIds.length} 題）
+            </button>
+          )}
+
+          {/* ─ Notion 同步區塊 ─ */}
+          <div className="section-label" style={{marginTop:24, display:"flex", alignItems:"center", justifyContent:"space-between"}}>
+            <span>Notion 雲端紀錄</span>
+            {NOTION_ENABLED && pendingCount > 0 && (
+              <span style={{fontSize:11, background:"#ff9800", color:"#fff", borderRadius:99, padding:"2px 8px"}}>
+                待同步 {pendingCount}
+              </span>
+            )}
+          </div>
+
+          {!NOTION_ENABLED ? (
+            <div style={{background:"#fff8e1", border:"1px solid #ffe082", borderRadius:12, padding:"14px 16px", fontSize:13, color:"#795548", lineHeight:1.6}}>
+              <b>尚未連接 Notion</b><br/>
+              請至 <b>script.google.com</b> 建立 GAS Web App，<br/>
+              部署後將網址填入程式碼的 <code>GAS_PROXY_URL</code>。
+            </div>
+          ) : (
+            <div style={{background:"var(--card)", border:"1px solid var(--border)", borderRadius:16, overflow:"hidden"}}>
+              {/* 頁籤 */}
+              <div style={{display:"flex", borderBottom:"1px solid var(--border)"}}>
+                {[["sync","同步狀態"],["query","查詢記錄"]].map(([k,l]) => (
+                  <button key={k} onClick={() => { setNotionTab(k==="query"); if(k==="query" && !notionRows) loadNotion(); }}
+                    style={{flex:1, padding:"10px 0", border:"none", background: notionTab===(k==="query") ?"#f5f5f5":"transparent",
+                      fontWeight:notionTab===(k==="query")?"700":"400", fontSize:13, cursor:"pointer", color:"var(--text)"}}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+
+              {!notionTab ? (
+                /* 同步狀態 */
+                <div style={{padding:"16px"}}>
+                  <div style={{fontSize:13, color:"var(--sub)", marginBottom:12}}>
+                    每次答題自動推送到 Notion，離線時暫存本機待網路恢復後同步。
+                  </div>
+                  {pendingCount > 0 && (
+                    <div style={{fontSize:13, color:"#e65100", marginBottom:10}}>
+                      ⚠️ 本機有 {pendingCount} 筆尚未同步
+                    </div>
+                  )}
+                  <button onClick={manualSync} disabled={notionStatus==="syncing"}
+                    style={{width:"100%", padding:"11px 0", borderRadius:10, border:"none",
+                      background:"#1a1a1a", color:"#fff", fontWeight:700, fontSize:14, cursor:"pointer"}}>
+                    {notionStatus==="syncing" ? "同步中..." : notionStatus==="ok" ? "✓ 已同步" : notionStatus==="err" ? "✗ 同步失敗" : "立即同步到 Notion"}
+                  </button>
+
+                  {/* 題庫上傳區 */}
+                  <div style={{marginTop:16, borderTop:"1px solid var(--border)", paddingTop:14}}>
+                    <div style={{fontSize:13, color:"var(--sub)", marginBottom:10}}>
+                      將全部 <b>{allQ ? allQ.length : 0}</b> 題（內建 + AI生成）上傳至 Notion 題庫資料庫。
+                    </div>
+                    {uploadProgress === null && !uploadDone && (
+                      <button onClick={startUpload}
+                        style={{width:"100%", padding:"10px 0", borderRadius:10, border:"1px solid #1a1a1a",
+                          background:"transparent", color:"#1a1a1a", fontWeight:700, fontSize:13, cursor:"pointer"}}>
+                        📚 上傳所有題庫到 Notion
+                      </button>
+                    )}
+                    {uploadProgress !== null && !uploadDone && (
+                      <div>
+                        <div style={{display:"flex", justifyContent:"space-between", fontSize:12, color:"var(--sub)", marginBottom:6}}>
+                          <span>上傳中... {uploadProgress.done} / {uploadProgress.total}</span>
+                          <span>{Math.round(uploadProgress.done / uploadProgress.total * 100)}%</span>
+                        </div>
+                        <div style={{background:"var(--border)", borderRadius:99, height:6, overflow:"hidden"}}>
+                          <div style={{height:"100%", background:"#1a1a1a", borderRadius:99,
+                            width:`${Math.round(uploadProgress.done / uploadProgress.total * 100)}%`,
+                            transition:"width 0.3s"}} />
+                        </div>
+                      </div>
+                    )}
+                    {uploadDone && (
+                      <div style={{fontSize:13, color:"#52b788", fontWeight:600, textAlign:"center", padding:"8px 0"}}>
+                        ✓ 上傳完成（{uploadProgress && uploadProgress.done} 題）
+                        <button onClick={() => { setUploadProgress(null); setUploadDone(false); }}
+                          style={{marginLeft:10, background:"none", border:"none", color:"var(--sub)", fontSize:12, cursor:"pointer"}}>
+                          重新上傳
+                        </button>
+                      </div>
+                    )}
+                    {uploadErr && (
+                      <div style={{fontSize:12, color:"#e05252", marginTop:6}}>{uploadErr}</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* 查詢記錄 */
+                <div style={{padding:"12px 16px"}}>
+                  <div style={{display:"flex", gap:6, marginBottom:12, flexWrap:"wrap"}}>
+                    {[["all","全部"],["grammar","文法"],["vocabulary","單字"],["reading","閱讀"],["listening","聽力"]].map(([k,l]) => (
+                      <button key={k} onClick={() => switchFilter(k)}
+                        style={{padding:"5px 12px", borderRadius:99, border:`1px solid ${notionFilter===k?"#1a1a1a":"var(--border)"}`,
+                          background:notionFilter===k?"#1a1a1a":"transparent", color:notionFilter===k?"#fff":"var(--text)",
+                          fontSize:12, cursor:"pointer"}}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  {notionLoading && <div style={{textAlign:"center", padding:"20px", color:"var(--sub)", fontSize:13}}>載入中...</div>}
+                  {notionErr && <div style={{color:"#e05252", fontSize:13, padding:"8px 0"}}>{notionErr}</div>}
+                  {notionRows && (
+                    <>
+                      <div style={{fontSize:12, color:"var(--sub)", marginBottom:8}}>共 {notionRows.length} 筆紀錄</div>
+                      <div style={{maxHeight:340, overflowY:"auto"}}>
+                        {notionRows.length === 0 && <div style={{color:"var(--sub)", fontSize:13, textAlign:"center", padding:20}}>尚無紀錄</div>}
+                        {notionRows.map((r, i) => (
+                          <div key={i} style={{display:"flex", alignItems:"center", gap:8, padding:"9px 0",
+                            borderBottom:"1px solid var(--border)", fontSize:12}}>
+                            <span style={{minWidth:24, textAlign:"center"}}>{r.result.startsWith("✅") ? "✅" : "❌"}</span>
+                            <div style={{flex:1, overflow:"hidden"}}>
+                              <div style={{fontWeight:600, color:"var(--text)", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>
+                                {r.title.slice(0, 60)}
+                              </div>
+                              <div style={{color:"var(--sub)", marginTop:2}}>
+                                {r.cat} · {r.diff} {r.isAI ? "· AI" : ""} · {r.ts ? new Date(r.ts).toLocaleDateString("zh-TW") : ""}
+                              </div>
+                            </div>
+                            {r.ans && <div style={{color:"#52b788", fontSize:11, maxWidth:80, textAlign:"right"}}>{r.ans.slice(0,20)}</div>}
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => loadNotion()} style={{marginTop:10, width:"100%", padding:"8px 0",
+                        borderRadius:8, border:"1px solid var(--border)", background:"transparent",
+                        color:"var(--sub)", fontSize:12, cursor:"pointer"}}>
+                        重新載入
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          <div style={{height:20}} />
+        </div>
+      );
+    }
+
+    /* ── Render ───────────────────────────────────────────────────────────── */
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+    /* ── Service Worker ───────────────────────────────────────────────────── */
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
